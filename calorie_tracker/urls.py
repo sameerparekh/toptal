@@ -1,29 +1,12 @@
 __author__ = 'sameer'
 
 from django.conf.urls import url, include
-from django.contrib.auth.models import User
-from rest_framework import routers, serializers, viewsets
-
-# Serializers define the API representation.
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'is_staff')
-
-# ViewSets define the view behavior.
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-# Routers provide an easy way of automatically determining the URL conf.
-router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
+from rest_framework.urlpatterns import format_suffix_patterns
 import views
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^meals/$', views.meals),
-    url(r'^meals/(?P<pk>[0-9]+)/$', views.meals_detail),
+    url(r'^meals/$', views.MealList.as_view()),
+    url(r'^meals/(?P<pk>[0-9]+)/$', views.MealDetail.as_view()),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
-
 ]
+urlpatterns = format_suffix_patterns(urlpatterns)

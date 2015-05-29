@@ -2,36 +2,16 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from models import *
 from datetime import time, date
 from serializers import MealSerializer
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
-
-@csrf_exempt
-def meals(request):
-    if(request.method == "POST"):
-        data = JSONParser().parse(request)
-        serializer = MealSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JSONResponse(serializer.data, status=201)
-        else:
-            return JSONResponse(serializer.errors, status=400)
-
-    elif(request.method == "GET"):
+class MealList(APIView):
+    def get(self, request, format=None):
         params = request.GET
 
         meals = Meal.objects
@@ -48,30 +28,42 @@ def meals(request):
             end_date = date.strpdate("%Y%M%D", params['end_date'])
             meals = meals.filter(date__lte = end_date)
         serializer = MealSerializer(meals.all(), many=True)
-        return JSONResponse(serializer.data)
+        return Response(serializer.data)
 
-    else:
-        return HttpResponseBadRequest("GET, POST, or DELETE only")
+    def post(self, request, format=None):
+        data = JSONParser().parse(request)
+        serializer = MealSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def meals_detail(request, pk):
-    try:
-        meal = Meal.objects.get(pk=pk)
-    except Meal.DoesNotExist:
-        return HttpResponseNotFound()
+class MealDetail(APIView):
+    def get_object(self, pk):
+        try:
+            meal = Meal.objects.get(pk=pk)
+        except Meal.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if(request.method == "GET"):
+        return meal
+
+    def get(self, request, pk, format=None):
+        meal = self.get_object(pk)
         serializer = MealSerializer(meal)
-        return JSONResponse(serializer.data)
+        return Response(serializer.data)
 
-    elif(request.method == "PUT"):
+    def put(self, request, pk, format=None):
+        meal = self.get_object(pk)
         data = JSONParser().parse(request)
         serializer = MealSerializer(meal, data=data)
         if serializer.is_valid():
             serializer.save()
-            return JSONResponse(serializer.data)
+            return Response(serializer.data)
         else:
-            return JSONResponse(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif(request.method == "DELETE"):
+    def delete(self, request, pk, format=None):
+        meal = self.get_object(pk)
         meal.delete()
-        return HttpResponse(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
