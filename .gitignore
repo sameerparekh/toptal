@@ -1,0 +1,8 @@
+;;extensions to ignore
+*.log
+*.pot
+*.pyc
+db.sqlite3
+ 
+;;directories to ignore
+.idea/
