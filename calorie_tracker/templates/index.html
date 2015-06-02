@@ -42,5 +42,10 @@
             </div>
         </form>
     </div>
+
+    <div ng-controller="MealController as meals">
+        {{ meals.total_calories }}
+        <span ng-repeat="meal in meals.meals">{{ meal.id }} : {{ meal.text }} : {{  meal.calories }} : {{  meal.time }}</span>
+    </div>
 </body>
 </html>
