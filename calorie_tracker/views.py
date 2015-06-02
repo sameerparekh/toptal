@@ -8,6 +8,7 @@ from serializers import MealSerializer, PersonSerializer
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import permissions
+from rest_framework import status
 from permissions import IsOwner, CreateOnlyIfNotAuth, AdminOrSelf
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
@@ -77,6 +78,19 @@ class PersonDetail(generics.RetrieveUpdateAPIView):
     permission_classes = (AdminOrSelf,)
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
+
+    def put(self, request, *args, **kwargs):
+        try:
+            person = Person.objects.get(pk=kwargs['pk'])
+        except Person.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PersonSerializer(person, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(('GET',))

@@ -29,3 +29,8 @@ class PersonSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(username, email, password)
         user.save()
         return Person.objects.create(user=user, expected_calories=validated_data['expected_calories'])
+
+    def update(self, instance, validated_data):
+        instance.expected_calories = validated_data.get('expected_calories', instance.expected_calories)
+        instance.save()
+        return instance
