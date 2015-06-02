@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
-class Person(User):
+class Person(models.Model):
+    user = models.OneToOneField(User)
     expected_calories = models.IntegerField(null=True, blank=True)
 
 class Meal(models.Model):
@@ -11,4 +12,4 @@ class Meal(models.Model):
     date = models.DateField(auto_now_add=True, db_index=True)
     time = models.TimeField(auto_now_add=True, db_index=True)
     calories = models.IntegerField()
-    person = models.ForeignKey(Person)
+    person = models.ForeignKey(Person, related_name='meals')

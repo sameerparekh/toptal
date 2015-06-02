@@ -2,36 +2,76 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from models import Meal
-from datetime import time, date
-from serializers import MealSerializer
+from models import Meal, Person
+from datetime import datetime
+from serializers import MealSerializer, PersonSerializer
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework import permissions
+from permissions import IsOwner, CreateOnlyIfNotAdmin
+from rest_framework.decorators import api_view
+from rest_framework.reverse import reverse
+from django.contrib.auth.models import User
 
 class MealList(generics.ListCreateAPIView):
     queryset = Meal.objects.all()
     serializer_class = MealSerializer
+    permission_classes = (IsOwner, permissions.IsAuthenticated)
 
     def get(self, request, *args, **kwargs):
         params = request.GET
-
         meals = Meal.objects
+
+        if request.user.is_staff:
+            if 'person' in params:
+                username = params['person']
+                person = User.objects.get_by_natural_key(username).person
+                meals = meals.filter(person = person)
+        else:
+            person = request.user.person
+            meals = meals.filter(person = person)
+
         if 'start_time' in params:
-            start_time = time.strptime("%H%M%S", params['start_time'])
+            start_time = datetime.strptime(params['start_time'], "%H%M%S").time()
             meals = meals.filter(time__gte = start_time)
         if 'end_time' in params:
-            end_time = time.strptime("%H%M%S", params['end_time'])
+            end_time = datetime.strptime(params['end_time'], "%H%M%S").time()
             meals = meals.filter(time__lte = end_time)
         if 'start_date' in params:
-            start_date = date.strpdate("%Y%M%D", params['start_date'])
+            start_date = datetime.strptime(params['start_date'], "%Y%m%d").date()
             meals = meals.filter(date__gte = start_date)
         if 'end_date' in params:
-            end_date = date.strpdate("%Y%M%D", params['end_date'])
+            end_date = datetime.strptime(params['end_date'], "%Y%m%d").date()
             meals = meals.filter(date__lte = end_date)
         serializer = MealSerializer(meals.all(), many=True)
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        person = User.objects.get_by_natural_key(user.username).person
+        serializer.save(person=person)
 
 
 class MealDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Meal.objects.all()
     serializer_class = MealSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+
+class PersonList(generics.ListCreateAPIView):
+    permission_classes = (CreateOnlyIfNotAdmin,)
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
+
+
+class PersonDetail(generics.RetrieveAPIView):
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
+
+
+@api_view(('GET',))
+def api_root(request, format=None):
+    return Response({
+        'users': reverse('user-list', request=request, format=format),
+        'meals': reverse('meal-list', request=request, format=format)
+    })
