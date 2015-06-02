@@ -19,16 +19,16 @@ class PersonSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True} }
 
     username = serializers.CharField(source='user.username', read_only=False)
-    email = serializers.CharField(source='user.email', read_only=False)
+    email = serializers.CharField(source='user.email', read_only=False, required=False)
     password = serializers.CharField(source='user.password', read_only=False)
 
     def create(self, validated_data):
         username = validated_data['user']['username']
         password = validated_data['user']['password']
-        email = validated_data['user']['email']
+        email = validated_data['user'].get('email', "")
         user = User.objects.create_user(username, email, password)
         user.save()
-        return Person.objects.create(user=user, expected_calories=validated_data['expected_calories'])
+        return Person.objects.create(user=user, expected_calories=validated_data.get('expected_calories', None))
 
     def update(self, instance, validated_data):
         instance.expected_calories = validated_data.get('expected_calories', instance.expected_calories)

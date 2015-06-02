@@ -13,6 +13,7 @@ from permissions import IsOwner, CreateOnlyIfNotAuth, AdminOrSelf
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 class MealList(generics.ListCreateAPIView):
     queryset = Meal.objects.all()
@@ -99,3 +100,7 @@ def api_root(request, format=None):
         'users': reverse('user-list', request=request, format=format),
         'meals': reverse('meal-list', request=request, format=format)
     })
+
+@ensure_csrf_cookie
+def html_root(request, format=None):
+    return render(request, 'index.html')
