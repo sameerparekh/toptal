@@ -3,24 +3,23 @@ var csrftoken = $.cookie('csrftoken');
 var module = angular.module("calorieTracker", [])
 var authToken = null
 
-module.controller("RegisterController", ['$scope', '$rootScope', '$http',
+module.controller("RegisterLoginController", ['$scope', '$rootScope', '$http',
     function ($scope, $rootScope, $http) {
+        var controller = this
         this.registerUser = function registerUser() {
             $http.post("/calorie_tracker/users/", {
-                "username": this.username,
-                "password": this.password
+                "username": controller.username,
+                "password": controller.password
             }, {
                 "headers": { "X-CSRFToken": csrftoken }
+            }).success(function (data, status, headers, config) {
+                controller.loginUser()
             })
         }
-    }])
-
-module.controller("LoginController", ['$scope', '$rootScope', '$http',
-    function ($scope, $rootScope, $http) {
         this.loginUser = function loginUser() {
             $http.post("/calorie_tracker/api-token-auth/", {
-                "username": this.username,
-                "password": this.password
+                "username": controller.username,
+                "password": controller.password
             }, {
                 "headers": { "X-CSRFToken": csrftoken }
             })

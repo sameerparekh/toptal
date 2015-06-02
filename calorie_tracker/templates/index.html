@@ -2,6 +2,8 @@
 <html ng-app="calorieTracker">
 <head lang="en">
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
@@ -11,37 +13,37 @@
     <script src="/static/calorie_tracker/calorie_tracker.js"></script>
 </head>
 <body>
-    <div ng-controller="RegisterController as register">
-        <form ng-submit="register.registerUser()">
-            <div>
-                <label>Username:</label>
-                <input type="text" ng-model="register.username" placeholder="Username" required>
+    <div class="page-header">
+        <h1>Calorie Tracker</h1>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div ng-controller="RegisterLoginController as register">
+                <div class="row">
+                    <div class="col-sm-1">
+                        <label>Username</label>
+                    </div>
+                    <div class="col-sm-1">
+                        <input type="text" ng-model="register.username" placeholder="Username" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <label>Password</label>
+                    </div>
+                    <div class="col-sm-1">
+                        <input type="password" ng-model="register.password" placeholder="Password" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <button class="btn btn-primary" ng-click="register.registerUser()">Register</button>
+                    <button class="btn btn-success" ng-click="register.loginUser()">Login</button>
+                </div>
             </div>
-            <div>
-                <label>Password:</label>
-                <input type="password" ng-model="register.password" placeholder="Password" required>
-            </div>
-            <div>
-                <input type="submit" class="btn-submit" value="Register">
-            </div>
-        </form>
+        </div>
     </div>
 
-    <div ng-controller="LoginController as login">
-        <form ng-submit="login.loginUser()">
-            <div>
-                <label>Username:</label>
-                <input type="text" ng-model="login.username" placeholder="Username" required>
-            </div>
-            <div>
-                <label>Password:</label>
-                <input type="password" ng-model="login.password" placeholder="Password" required>
-            </div>
-            <div>
-                <input type="submit" class="btn-submit" value="Login">
-            </div>
-        </form>
-    </div>
+
 
     <div ng-controller="MealController as meals">
         {{ meals.total_calories }}
