@@ -16,15 +16,15 @@
     <div class="page-header">
         <h1>Calorie Tracker</h1>
     </div>
-    <div class="container">
-        <div class="row">
-            <div ng-controller="RegisterLoginController as register">
+    <div ng-controller="MainController">
+        <div class="container" ng-show="!authToken">
+            <div class="row">
                 <div class="row">
                     <div class="col-sm-1">
                         <label>Username</label>
                     </div>
                     <div class="col-sm-1">
-                        <input type="text" ng-model="register.username" placeholder="Username" required>
+                        <input type="text" ng-model="username" placeholder="Username" required>
                     </div>
                 </div>
                 <div class="row">
@@ -32,22 +32,45 @@
                         <label>Password</label>
                     </div>
                     <div class="col-sm-1">
-                        <input type="password" ng-model="register.password" placeholder="Password" required>
+                        <input type="password" ng-model="password" placeholder="Password" required>
                     </div>
                 </div>
                 <div class="row">
-                    <button class="btn btn-primary" ng-click="register.registerUser()">Register</button>
-                    <button class="btn btn-success" ng-click="register.loginUser()">Login</button>
+                    <button class="btn btn-primary" ng-click="registerUser()">Register</button>
+                    <button class="btn btn-success" ng-click="loginUser()">Login</button>
                 </div>
             </div>
         </div>
-    </div>
-
-
-
-    <div ng-controller="MealController as meals">
-        {{ meals.total_calories }}
-        <span ng-repeat="meal in meals.meals">{{ meal.id }} : {{ meal.text }} : {{  meal.calories }} : {{  meal.time }}</span>
+        <div class="container" ng-show="authToken">
+            <div class="row">
+                <div class="col-sm-12">
+                    Expected Calories: <input ng-model="expectedCalories" ng-enter="updateUser()"/>
+                    Total Calories: {{totalCalories}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <input type="text" ng-model="text" placeholder="Meal Text" required>
+                    <input type="text" ng-model="calories" placeholder="Meal Calories" required>
+                    <button class="btn btn-info" ng-click="newMeal()">New Meal</button>
+                </div>
+            </div>
+            Meals: {{ meals }}
+            <div class="row">
+                <div class="col-sm-12">
+                    <table>
+                        <tr ng-repeat="meal in meals">
+                            <td><input ng-model="meal.text"/></td>
+                            <td><input ng-model="meal.calories"/></td>
+                            <td><input ng-model="meal.time"/></td>
+                            <td><input ng-model="meal.date"/></td>
+                            <td><button class="btn btn-alert" ng-click="deleteMeal(meal)">Delete</button></td>
+                            <td><button class="btn btn-info" ng-click="updateMeal(meal)">Update</button></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
