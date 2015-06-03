@@ -5,7 +5,20 @@ from views import *
 
 # Create your tests here.
 
-class PersonListTest(APITestCase):
+class BaseTestCase(APITestCase):
+    def create_user(self, username, password):
+        url = reverse('user-list')
+        response = self.client.post(url, {'username': username, 'password': password})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        return response.data['id']
+
+    def create_meal(self, text, calories, user=None):
+        url = reverse('meal-list')
+        response = self.client.post(url, {'text': text, 'calories': calories})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        return response.data['id']
+
+class PersonListTest(BaseTestCase):
     url = reverse('user-list')
 
     def test_create_user(self):
@@ -37,12 +50,7 @@ class PersonListTest(APITestCase):
         response = self.client.get("/calorie_tracker/users/")
         self.assertEqual(response.status_code, 401)
 
-class PersonDetailTest(APITestCase):
-    def create_user(self, username, password):
-        url = reverse('user-list')
-        response = self.client.post(url, {'username': username, 'password': password})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        return response.data['id']
+class PersonDetailTest(BaseTestCase):
 
     def test_get_self(self):
         id = self.create_user("testuser", "testpass")
@@ -88,7 +96,122 @@ class PersonDetailTest(APITestCase):
         response = self.client.put(url, { 'expected_calories': 42 })
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+class MealListTest(BaseTestCase):
+    url = reverse('meal-list')
+    def test_create_meal(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(self.url, {'text': "test", 'calories': 24})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['text'], "test")
 
+    def test_create_meal_noauth(self):
+        response = self.client.post(self.url, {'text': "test", 'calories': 24})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_meals(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+        self.create_meal("test", 34)
+        self.create_meal("test2", 42)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+class MealDetailTest(BaseTestCase):
+    def test_update_meal(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        url = reverse('meal-detail', args=[id])
+        response = self.client.put(url, {"text": "newtext", "calories": 2420})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['calories'], 2420)
+        self.assertEqual(response.data['text'], "newtext")
+
+    def test_update_meal_noauth(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        self.client.logout()
+        url = reverse('meal-detail', args=[id])
+        response = self.client.put(url, {"text": "newtext", "calories": 2342})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_meal_wronguser(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        self.client.logout()
+
+        self.create_user("testuser2", "testpass2")
+        self.client.login(username="testuser", password="testpass2")
+        url = reverse('meal-detail', args=[id])
+        response = self.client.put(url, {"text": "newtext", "calories": 2342})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_meal(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        url = reverse('meal-detail', args=[id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['calories'], 242)
+
+    def test_get_meal_noauth(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        self.client.logout()
+        url = reverse('meal-detail', args=[id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_meal_wronguser(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        self.client.logout()
+
+        self.create_user("testuser2", "testpass2")
+        self.client.login(username="testuser", password="testpass2")
+        url = reverse('meal-detail', args=[id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_meal(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        url = reverse('meal-detail', args=[id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_meal_noauth(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        self.client.logout()
+        url = reverse('meal-detail', args=[id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_meal_wronguser(self):
+        self.create_user("testuser", "testpass")
+        self.client.login(username="testuser", password="testpass")
+        id = self.create_meal("test", 242)
+        self.client.logout()
+
+        self.create_user("testuser2", "testpass2")
+        self.client.login(username="testuser", password="testpass2")
+        url = reverse('meal-detail', args=[id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 
