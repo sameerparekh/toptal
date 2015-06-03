@@ -28,9 +28,12 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 "password": $scope.password
             }, {
                 "headers": { "X-CSRFToken": csrftoken }
-            }).success(function (data, status, headers, config) {
-                $scope.loginUser()
             })
+                .success(function (data, status, headers, config) {
+                    $scope.loginUser()
+                }).error(function (data, status, headers, config) {
+                    alert("Unable to register: " + JSON.stringify(data))
+                })
         }
         $scope.loginUser = function loginUser() {
             $http.post("/calorie_tracker/api-token-auth/", {
@@ -44,6 +47,12 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                     $scope.getUser()
                     $scope.getMeals()
                 })
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to login: " + JSON.stringify(data))
+                })
+        }
+        $scope.logoutUser = function logoutUser() {
+            $scope.authToken = null
         }
         $scope.getUser = function getUser() {
             $http.get("/calorie_tracker/users/", { "headers": {"Authorization": "Token " + $scope.authToken}})
@@ -51,14 +60,24 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                     $scope.expectedCalories = data.expected_calories
                     $scope.userId = data.id
                 })
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to get user: " + JSON.stringify(data))
+                })
         }
         $scope.updateUser = function updateUser() {
-            $http.put("/calorie_tracker/users/" + $scope.userId, { "expected_calories": $scope.expectedCalories }, { "headers": {"Authorization": "Token " + $scope.authToken}})
+            $http.put("/calorie_tracker/users/" + $scope.userId, { "expected_calories": $scope.expectedCalories },
+                { "headers": {"Authorization": "Token " + $scope.authToken}})
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to update user: " + JSON.stringify(data))
+                })
         }
         $scope.deleteMeal = function deleteMeal(meal) {
             $http.delete("/calorie_tracker/meals/" + meal.id, { "headers": { "Authorization": "Token " + $scope.authToken}})
                 .success(function (data, status, headers, config) {
                     $scope.getMeals()
+                })
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to delete: " + JSON.stringify(data))
                 })
         }
         $scope.newMeal = function newMeal() {
@@ -71,6 +90,9 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 .success(function (data, status, headers, config) {
                     $scope.getMeals()
                 })
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to create new meal: " + JSON.stringify(data))
+                })
         }
         $scope.updateMeal = function updateMeal(meal) {
             $http.put("/calorie_tracker/meals/" + meal.id, {
@@ -82,6 +104,9 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 .success(function (data, status, headers, config) {
                     $scope.getMeals()
                 })
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to update meal: " + JSON.stringify(data))
+                })
         }
         $scope.getMeals = function getMeals() {
             $http.get("/calorie_tracker/meals/", { "headers": {"Authorization": "Token " + $scope.authToken}})
@@ -91,6 +116,9 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                     for (meal of data) {
                         $scope.totalCalories += meal.calories
                     }
+                })
+                .error(function (data, status, headers, config) {
+                    alert(status + ": Unable to get meals: " + JSON.stringify(data))
                 })
         }
     }])

@@ -42,6 +42,7 @@
             </div>
         </div>
         <div class="container" ng-show="authToken">
+            <button class="btn btn-primary" ng-click="logoutUser()">Logout</button>
             <div class="row">
                 <div class="col-sm-12">
                     Expected Calories: <input ng-model="expectedCalories" ng-enter="updateUser()"/>
@@ -64,7 +65,7 @@
                             <td><input ng-model="meal.calories"/></td>
                             <td><input ng-model="meal.time"/></td>
                             <td><input ng-model="meal.date"/></td>
-                            <td><button class="btn btn-alert" ng-click="deleteMeal(meal)">Delete</button></td>
+                            <td><button class="btn btn-warn" ng-click="deleteMeal(meal)">Delete</button></td>
                             <td><button class="btn btn-info" ng-click="updateMeal(meal)">Update</button></td>
                         </tr>
                     </table>
