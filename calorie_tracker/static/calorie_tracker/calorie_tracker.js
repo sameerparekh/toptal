@@ -21,6 +21,10 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
         $scope.expectedCalories = null
         $scope.meals = []
         $scope.totalCalories = null
+        $scope.startDate = null
+        $scope.startTime = null
+        $scope.endDate = null
+        $scope.endTime = null
 
         $scope.registerUser = function registerUser() {
             $http.post("/calorie_tracker/users/", {
@@ -109,7 +113,15 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 })
         }
         $scope.getMeals = function getMeals() {
-            $http.get("/calorie_tracker/meals/", { "headers": {"Authorization": "Token " + $scope.authToken}})
+            params = {}
+            if ($scope.startDate) params.start_date = $scope.startDate
+            if ($scope.endDate) params.end_date = $scope.endDate
+            if ($scope.startTime) params.start_time = $scope.startTime
+            if ($scope.endTime) params.end_time = $scope.endTime
+
+            $http.get("/calorie_tracker/meals/",
+                { "headers": {"Authorization": "Token " + $scope.authToken},
+                "params": params})
                 .success(function (data, status, headers, config) {
                     $scope.meals = data
                     $scope.totalCalories = 0

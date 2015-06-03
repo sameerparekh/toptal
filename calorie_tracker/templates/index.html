@@ -32,7 +32,7 @@
                         <label>Password</label>
                     </div>
                     <div class="col-sm-1">
-                        <input type="password" ng-model="password" placeholder="Password" required>
+                        <input type="password" ng-model="password" placeholder="Password" ng-enter="loginUser()" required>
                     </div>
                 </div>
                 <div class="row">
@@ -54,7 +54,7 @@
                         color: black;
                     }
                     </style>
-                    Expected Calories: <input ng-model="expectedCalories" ng-enter="updateUser()"/>
+                    Expected Calories: <input ng-model="expectedCalories" ng-blur="updateUser()"/>
                     Total Calories: <input ng-class='{red: totalCalories > expectedCalories, black: totalCalories <= expectedCalories }' ng-model="totalCalories" readonly/>
                 </div>
             </div>
@@ -66,6 +66,10 @@
                 </div>
             </div>
             Meals:
+            <input ng-model="startDate" placeholder="Start Date (YYYYMMDD)" ng-blur="getMeals()"/>
+            <input ng-model="endDate" placeholder="End Date (YYYYMMDD)" ng-blur="getMeals()"/>
+            <input ng-model="startTime" placeholder="Start Time (HHMMSS)" ng-blur="getMeals()"/>
+            <input ng-model="endTime" placeholder="End Time (HHMMSS)" ng-blur="getMeals()"/>
             <div class="row">
                 <div class="col-sm-12">
                     <table>
