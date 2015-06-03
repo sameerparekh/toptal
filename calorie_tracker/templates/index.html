@@ -45,8 +45,17 @@
             <button class="btn btn-primary" ng-click="logoutUser()">Logout</button>
             <div class="row">
                 <div class="col-sm-12">
+                    <style type="text/css">
+                    .red {
+                        color: red;
+                    }
+
+                    .black {
+                        color: black;
+                    }
+                    </style>
                     Expected Calories: <input ng-model="expectedCalories" ng-enter="updateUser()"/>
-                    Total Calories: {{totalCalories}}
+                    Total Calories: <input ng-class='{red: totalCalories > expectedCalories, black: totalCalories <= expectedCalories }' ng-model="totalCalories" readonly/>
                 </div>
             </div>
             <div class="row">
@@ -56,7 +65,7 @@
                     <button class="btn btn-info" ng-click="newMeal()">New Meal</button>
                 </div>
             </div>
-            Meals: {{ meals }}
+            Meals:
             <div class="row">
                 <div class="col-sm-12">
                     <table>
@@ -65,8 +74,8 @@
                             <td><input ng-model="meal.calories"/></td>
                             <td><input ng-model="meal.time"/></td>
                             <td><input ng-model="meal.date"/></td>
-                            <td><button class="btn btn-warn" ng-click="deleteMeal(meal)">Delete</button></td>
-                            <td><button class="btn btn-info" ng-click="updateMeal(meal)">Update</button></td>
+                            <td><button class="btn btn-danger" ng-click="deleteMeal(meal)">Delete</button></td>
+                            <td><button class="btn btn-warning" ng-click="updateMeal(meal)">Update</button></td>
                         </tr>
                     </table>
                 </div>
