@@ -9,6 +9,8 @@ class MealSerializer(serializers.ModelSerializer):
         model = Meal
         fields = ('id', 'text', 'date', 'time', 'calories', 'person')
 
+    date = serializers.DateField(read_only=False)
+    time = serializers.TimeField(read_only=False)
     person = serializers.PrimaryKeyRelatedField(read_only=True)
 
 class PersonSerializer(serializers.ModelSerializer):
