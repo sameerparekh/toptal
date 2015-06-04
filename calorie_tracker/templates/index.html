@@ -57,7 +57,7 @@
                     }
                     </style>
                     Expected Calories: <input ng-model="expectedCalories" ng-blur="updateUser()"/>
-                    Total Calories: <input ng-class='{black: !expectedCalories, red: totalCalories > expectedCalories, green: totalCalories <= expectedCalories }' ng-model="totalCalories" readonly/>
+                    Total Calories: <span ng-class='{black: !expectedCalories, red: totalCalories > expectedCalories, green: totalCalories <= expectedCalories }'>{% verbatim %}{{ totalCalories }}{% endverbatim %}</span>
                 </div>
             </div>
             <div class="row">

@@ -12,7 +12,7 @@ class BaseTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         return response.data['id']
 
-    def create_meal(self, text, calories, user=None):
+    def create_meal(self, text, calories):
         url = reverse('meal-list')
         response = self.client.post(url, {'text': text, 'calories': calories})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
