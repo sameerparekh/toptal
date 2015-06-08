@@ -48,9 +48,11 @@ class MealList(generics.ListCreateAPIView):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        user = self.request.user
-        person = User.objects.get_by_natural_key(user.username).person
-        serializer.save(person=person)
+        if not self.request.user.is_staff:
+            person = User.objects.get_by_natural_key(self.request.user.username).person
+            serializer.save(person=person)
+        else:
+            serializer.save()
 
 
 class MealDetail(generics.RetrieveUpdateDestroyAPIView):

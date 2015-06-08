@@ -44,6 +44,10 @@
         <div class="container" ng-show="authToken">
             <button class="btn btn-primary" ng-click="logoutUser()">Logout</button>
             <div class="row">
+                Operating As: <span ng-show="!isStaff">{%  verbatim %}{{ username }}{% endverbatim %}</span>
+                <select ng-show="isStaff" ng-model="user" ng-options="user.username for user in userList track by user.id"></select>
+            </div>
+            <div class="row">
                 <div class="col-sm-12">
                     <style type="text/css">
                     .red {
@@ -56,10 +60,11 @@
                         color: black;
                     }
                     </style>
-                    Expected Calories: <input ng-model="expectedCalories" ng-blur="updateUser()"/>
-                    Total Calories: <span ng-class='{black: !expectedCalories, red: totalCalories > expectedCalories, green: totalCalories <= expectedCalories }'>{% verbatim %}{{ totalCalories }}{% endverbatim %}</span>
+                    Expected Calories: <input ng-model="user.expected_calories" ng-blur="updateUser()"/>
+                    Total Calories: <span ng-class='{black: !user.expected_calories, red: totalCalories > user.expected_calories, green: totalCalories <= user.expected_calories }'>{% verbatim %}{{ totalCalories }}{% endverbatim %}</span>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col-sm-12">
                     <input type="text" ng-model="text" placeholder="Meal Text" required>
@@ -74,15 +79,27 @@
             <input ng-model="endTime" placeholder="End Time (HHMMSS)" ng-blur="getMeals()"/>
             <div class="row">
                 <div class="col-sm-12">
-                    <table>
-                        <tr ng-repeat="meal in meals">
-                            <td><input ng-model="meal.text"/></td>
-                            <td><input ng-model="meal.calories"/></td>
-                            <td><input ng-model="meal.time"/></td>
-                            <td><input ng-model="meal.date"/></td>
-                            <td><button class="btn btn-danger" ng-click="deleteMeal(meal)">Delete</button></td>
-                            <td><button class="btn btn-warning" ng-click="updateMeal(meal)">Update</button></td>
-                        </tr>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Text</th>
+                                <th>Calories</th>
+                                <th>Time</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="meal in meals">
+                                <td>{% verbatim %}{{ userById[meal.person].username }}{% endverbatim %}</td>
+                                <td><input ng-model="meal.text"/></td>
+                                <td><input ng-model="meal.calories"/></td>
+                                <td><input ng-model="meal.time"/></td>
+                                <td><input ng-model="meal.date"/></td>
+                                <td><button class="btn btn-danger" ng-click="deleteMeal(meal)">Delete</button></td>
+                                <td><button class="btn btn-warning" ng-click="updateMeal(meal)">Update</button></td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>

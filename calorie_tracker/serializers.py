@@ -18,7 +18,7 @@ class MealSerializer(serializers.ModelSerializer):
 
     date = serializers.DateField(read_only=False, required=False)
     time = serializers.TimeField(read_only=False, required=False)
-    person = serializers.PrimaryKeyRelatedField(read_only=True)
+    person = serializers.PrimaryKeyRelatedField(queryset=Person.objects)
 
 class PersonSerializer(serializers.ModelSerializer):
     meals = serializers.PrimaryKeyRelatedField(many=True, read_only=True)

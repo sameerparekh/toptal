@@ -18,13 +18,14 @@ module.directive('ngEnter', function () {
 module.controller("MainController", ['$scope', '$rootScope', '$http',
     function ($scope, $rootScope, $http) {
         $scope.authToken = null
-        $scope.expectedCalories = null
         $scope.meals = []
         $scope.totalCalories = null
         $scope.startDate = null
         $scope.startTime = null
         $scope.endDate = null
         $scope.endTime = null
+        $scope.user = null
+        $scope.userById = {}
 
         $scope.registerUser = function registerUser() {
             $http.post("/calorie_tracker/users/", {
@@ -49,7 +50,6 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 .success(function (data, status, headers, config) {
                     $scope.authToken = data.token
                     $scope.getUser()
-                    $scope.getMeals()
                 })
                 .error(function (data, status, headers, config) {
                     alert(status + ": Unable to login: " + JSON.stringify(data))
@@ -61,20 +61,30 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
         $scope.getUser = function getUser() {
             $http.get("/calorie_tracker/users/", { "headers": {"Authorization": "Token " + $scope.authToken}})
                 .success(function (data, status, headers, config) {
-                    $scopeUserList = data
+                    $scope.userList = data
+                    if(data.length > 1) {
+                        $scope.isStaff = true
+                    } else {
+                        $scope.isStaff = false
+                    }
                     for (ix in data) {
                         if(data[ix].username == $scope.username) {
-                            $scope.expectedCalories = data[ix].expected_calories
-                            $scope.userId = data[ix].id
+                            $scope.user = data[ix]
                         }
+                        $scope.userById[data[ix].id] = data[ix]
                     }
+
+                    $scope.$watch("user", function () {
+                        $scope.getMeals()
+                    })
+                    $scope.getMeals()
                 })
                 .error(function (data, status, headers, config) {
                     alert(status + ": Unable to get user: " + JSON.stringify(data))
                 })
         }
         $scope.updateUser = function updateUser() {
-            $http.put("/calorie_tracker/users/" + $scope.userId, { "expected_calories": $scope.expectedCalories },
+            $http.put("/calorie_tracker/users/" + $scope.user.id, { "expected_calories": $scope.user.expected_calories },
                 { "headers": {"Authorization": "Token " + $scope.authToken}})
                 .error(function (data, status, headers, config) {
                     alert(status + ": Unable to update user: " + JSON.stringify(data))
@@ -92,7 +102,8 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
         $scope.newMeal = function newMeal() {
             $http.post("/calorie_tracker/meals/", {
                 "text": $scope.text,
-                "calories": $scope.calories
+                "calories": $scope.calories,
+                "person": $scope.user.id
             }, { "headers": { "X-CSRFToken": csrftoken,
                 "Authorization": "Token " + $scope.authToken
             }})
@@ -123,6 +134,7 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
             if ($scope.endDate) params.end_date = $scope.endDate
             if ($scope.startTime) params.start_time = $scope.startTime
             if ($scope.endTime) params.end_time = $scope.endTime
+            params.person = $scope.user.username
 
             $http.get("/calorie_tracker/meals/",
                 { "headers": {"Authorization": "Token " + $scope.authToken},
