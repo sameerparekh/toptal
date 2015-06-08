@@ -32,18 +32,27 @@ class MealList(generics.ListCreateAPIView):
             person = request.user.person
             meals = meals.filter(person = person)
 
+        filtered = False
         if 'start_time' in params:
             start_time = datetime.strptime(params['start_time'], "%H%M%S").time()
             meals = meals.filter(time__gte = start_time)
+            filtered = True
         if 'end_time' in params:
             end_time = datetime.strptime(params['end_time'], "%H%M%S").time()
             meals = meals.filter(time__lte = end_time)
+            filtered = True
         if 'start_date' in params:
             start_date = datetime.strptime(params['start_date'], "%Y%m%d").date()
             meals = meals.filter(date__gte = start_date)
+            filtered = True
         if 'end_date' in params:
             end_date = datetime.strptime(params['end_date'], "%Y%m%d").date()
             meals = meals.filter(date__lte = end_date)
+            filtered = True
+
+        if not filtered:
+            meals = meals.filter(date = datetime.now().date())
+
         serializer = MealSerializer(meals.all(), many=True)
         return Response(serializer.data)
 
