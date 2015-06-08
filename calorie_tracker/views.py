@@ -8,7 +8,7 @@ from serializers import MealSerializer, PersonSerializer
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import permissions
-from permissions import IsOwner, CreateOnlyIfNotAuth, AdminOrSelf
+from permissions import IsOwnerOrStaff, CreateOnlyIfNotAuth, SuperuserOrSelf
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User
@@ -17,7 +17,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 class MealList(generics.ListCreateAPIView):
     queryset = Meal.objects.all()
     serializer_class = MealSerializer
-    permission_classes = (IsOwner, permissions.IsAuthenticated)
+    permission_classes = (IsOwnerOrStaff, permissions.IsAuthenticated)
 
     def get(self, request, *args, **kwargs):
         params = request.GET
@@ -56,7 +56,7 @@ class MealList(generics.ListCreateAPIView):
 class MealDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Meal.objects.all()
     serializer_class = MealSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsOwnerOrStaff, permissions.IsAuthenticated)
 
 
 class PersonList(generics.ListCreateAPIView):
@@ -68,14 +68,14 @@ class PersonList(generics.ListCreateAPIView):
         if request.user.is_staff:
             persons = Person.objects
             serializer = PersonSerializer(persons.all(), many=True)
-            return Response(serializer.data)
         else:
             person = Person.objects.get(user = request.user)
-            serializer = PersonSerializer(person)
-            return Response(serializer.data)
+            serializer = PersonSerializer([person], many=True)
+
+        return Response(serializer.data)
 
 class PersonDetail(generics.RetrieveUpdateAPIView):
-    permission_classes = (AdminOrSelf,)
+    permission_classes = (SuperuserOrSelf,)
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
 

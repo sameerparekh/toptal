@@ -18,6 +18,25 @@ class BaseTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         return response.data['id']
 
+    def set_superuser(self, user):
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+
+    def set_staff(self, user):
+        user.is_staff = True
+        user.save()
+
+    def create_staff(self):
+        self.create_user("staff", "staff")
+        user = User.objects.get_by_natural_key("staff")
+        self.set_staff(user)
+
+    def create_superuser(self):
+        self.create_user("admin", "admin")
+        user = User.objects.get_by_natural_key("admin")
+        self.set_superuser(user)
+
 class PersonListTest(BaseTestCase):
     url = reverse('user-list')
 
@@ -43,12 +62,32 @@ class PersonListTest(BaseTestCase):
         self.client.login(username='testuser', password='test')
 
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['username'], "testuser")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['username'], "testuser")
 
     def test_list_noauth(self):
         response = self.client.get("/calorie_tracker/users/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_staff(self):
+        self.create_staff()
+        id = self.create_user("test", "test")
+        self.client.login(username="staff", password="staff")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        userResponse = [u for u in response.data if u['id'] == id][0]
+        self.assertDictContainsSubset({'id': id, 'username': 'test'}, userResponse)
+
+    def test_list_superuser(self):
+        self.create_superuser()
+        id = self.create_user("test", "test")
+        self.client.login(username="admin", password="admin")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        userResponse = [u for u in response.data if u['id'] == id][0]
+        self.assertDictContainsSubset({'id': id, 'username': 'test'}, userResponse)
 
 class PersonDetailTest(BaseTestCase):
 
@@ -74,6 +113,23 @@ class PersonDetailTest(BaseTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_get_staff(self):
+        id = self.create_user("testuser", "testpass")
+        url = reverse('user-detail', args=[id])
+        self.create_staff()
+        self.client.login(username="staff", password="staff")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_superuser(self):
+        id = self.create_user("testuser", "testpass")
+        url = reverse('user-detail', args=[id])
+        self.create_superuser()
+        self.client.login(username="admin", password="admin")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['id'], id)
+
     def test_update_self(self):
         id = self.create_user("testuser", "testpass")
         url = reverse('user-detail', args=[id])
@@ -95,6 +151,25 @@ class PersonDetailTest(BaseTestCase):
 
         response = self.client.put(url, { 'expected_calories': 42 })
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_staff(self):
+        self.create_staff()
+        id2 = self.create_user("testuser2", "testpass2")
+        url = reverse('user-detail', args=[id2])
+        self.client.login(username="staff", password="staff")
+
+        response = self.client.put(url, { 'expected_calories': 42 })
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_superuser(self):
+        self.create_superuser()
+        id2 = self.create_user("testuser2", "testpass2")
+        url = reverse('user-detail', args=[id2])
+        self.client.login(username="admin", password="admin")
+
+        response = self.client.put(url, { 'expected_calories': 42 })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['expected_calories'], 42)
 
 class MealListTest(BaseTestCase):
     url = reverse('meal-list')

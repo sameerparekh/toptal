@@ -61,8 +61,13 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
         $scope.getUser = function getUser() {
             $http.get("/calorie_tracker/users/", { "headers": {"Authorization": "Token " + $scope.authToken}})
                 .success(function (data, status, headers, config) {
-                    $scope.expectedCalories = data.expected_calories
-                    $scope.userId = data.id
+                    $scopeUserList = data
+                    for (ix in data) {
+                        if(data[ix].username == $scope.username) {
+                            $scope.expectedCalories = data[ix].expected_calories
+                            $scope.userId = data[ix].id
+                        }
+                    }
                 })
                 .error(function (data, status, headers, config) {
                     alert(status + ": Unable to get user: " + JSON.stringify(data))
@@ -125,8 +130,8 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 .success(function (data, status, headers, config) {
                     $scope.meals = data
                     $scope.totalCalories = 0
-                    for (meal of data) {
-                        $scope.totalCalories += meal.calories
+                    for (ix in data) {
+                        $scope.totalCalories += data[ix].calories
                     }
                 })
                 .error(function (data, status, headers, config) {

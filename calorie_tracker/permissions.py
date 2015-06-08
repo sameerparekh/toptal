@@ -3,14 +3,14 @@ __author__ = 'sameer'
 from rest_framework import permissions
 
 
-class IsOwner(permissions.BasePermission):
+class IsOwnerOrStaff(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit it.
     """
 
     def has_object_permission(self, request, view, obj):
         # Write permissions are only allowed to the person of the meal, or the admin
-        return request.user.is_staff or obj.person == request.user
+        return request.user.is_staff or obj.person.user == request.user
 
 class CreateOnlyIfNotAuth(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -19,8 +19,8 @@ class CreateOnlyIfNotAuth(permissions.BasePermission):
         else:
             return True
 
-class AdminOrSelf(permissions.BasePermission):
+class SuperuserOrSelf(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return request.user.is_staff or obj.user == request.user
+        return request.user.is_superuser or obj.user == request.user
 
 
