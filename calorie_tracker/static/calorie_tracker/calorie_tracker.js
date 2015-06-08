@@ -85,7 +85,8 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
         }
         $scope.updateUser = function updateUser() {
             $http.put("/calorie_tracker/users/" + $scope.user.id, { "expected_calories": $scope.user.expected_calories },
-                { "headers": {"Authorization": "Token " + $scope.authToken}})
+                { "headers": {"Authorization": "Token " + $scope.authToken,
+                              "X-CSRFToken": csrftoken}})
                 .error(function (data, status, headers, config) {
                     alert(status + ": Unable to update user: " + JSON.stringify(data))
                 })
@@ -120,7 +121,8 @@ module.controller("MainController", ['$scope', '$rootScope', '$http',
                 "calories": meal.calories,
                 "date": meal.date,
                 "time": meal.time
-            }, { "headers": {"Authorization": "Token " + $scope.authToken}})
+            }, { "headers": {"Authorization": "Token " + $scope.authToken,
+                             "X-CSRFToken": csrftoken } } )
                 .success(function (data, status, headers, config) {
                     $scope.getMeals()
                 })
